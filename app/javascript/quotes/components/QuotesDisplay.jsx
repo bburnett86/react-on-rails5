@@ -2,13 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import queryString from 'query-string';
 import axios from 'axios';
+import QuoteText from './QuoteText'
+import QuoteNavigation from './QuoteNavigation'
+import QuoteFooter from './QuoteFooter'
 
 class QuotesDisplay extends React.Component{
     constructor(){
         super();
         // This will hold our quote once it receives the JSON from the api endpoint.
         this.state = {
-            quote: {}
+            quote: {},
+            fireRedirect: false
         };
     }
 
@@ -20,10 +24,10 @@ class QuotesDisplay extends React.Component{
         .then(response=>{
             //Update our state with the pulled quote information.
             this.setState({quote: response.data});
-            console.log(response.data)
         })
         .catch(error=>{
             console.error(error);
+            this.setState({fireRedirect: true})
         });
     }
 
@@ -56,21 +60,24 @@ class QuotesDisplay extends React.Component{
 
         return(
             <div>
-                {previousQuoteId &&
-                    <Link to = {`./?quote=${previousQuoteId}`}>
-                        Previous
-                    </Link>
-                }{nextQuoteId &&
-                    <Link to = {`./?quote=${nextQuoteId}`}>
-                        Next
-                    </Link>
-                }
-                <p>
-                    {quote.text}
-                </p>
-                <p>
-                    {quote.author}
-                </p>
+                <div className = 'quote-container'>
+                    {/* If fire direct is true redirect to root */}
+                    {this.state.fireRedirect &&
+                        <Redirect to = {'/'} />
+                    }
+                    {/* Displays icon / link for previous quote */}
+                    {previousQuoteId &&
+                        <QuoteNavigation directions = 'previous' otherQuoteId= {previousQuoteId} />
+                    }
+                    {/* Information for our quote */}
+                    <QuoteText quote = {this.state.quote} />
+                    {/* Displays icon / link for previous quote */}
+                    {nextQuoteId &&
+                        <QuoteNavigation directions = 'next' otherQuoteId = {nextQuoteId} />
+                    }
+                </div>
+                {this.state.quote.id != parseInt(this.props.startingQuoteId, 10)}
+                <QuoteFooter startingQuoteId = {this.props.startingQuoteId} />
             </div>
         );
     }
